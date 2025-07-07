@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El Desafío del Sacerdote Antiguo</title>
+    <style>
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            
+            background-image: url('https://source.unsplash.com/random/1920x1080/?ancient-ruins,greek-temple');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            color: #f0e6d2; 
+            overflow: hidden;
+        }
+
+        .game-container {
+            width: 90%;
+            max-width: 900px;
+            height: 80vh;
+            background-color: rgba(0, 0, 0, 0.7);
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 10px 20px;
+            background-color: rgba(50, 20, 0, 0.6);
+            border-radius: 8px;
+        }
+
+        .timer, .score, .message {
+            font-size: 1.5em;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+        }
+        .message {
+            flex-grow: 1;
+            text-align: center;
+        }
+
+        
+        .game-area {
+            flex-grow: 1;
+            position: relative;
+            border: 2px dashed #a08c6b;
+            border-radius: 10px;
+            background-color: rgba(0, 0, 0, 0.3);
+        }
+
+       
+        .altar {
+            width: 120px;
+            height: 120px;
+            background-color: #6b4d36;
+            border: 5px solid #a08c6b;
+            border-radius: 50%;
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.2em;
+            text-align: center;
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(255, 255, 0, 0.4);
+            transition: transform 0.2s;
+        }
+        .altar:hover {
+            transform: translateX(-50%) scale(1.05);
+        }
+
+        
+        .collectible {
+            width: 60px;
+            height: 60px;
+            background-color: #c09b6a;
+            border-radius: 8px;
+            position: absolute;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2em;
+            font-weight: bold;
+            color: #3e271a;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+            transition: transform 0.2s, opacity 0.2s;
+            z-index: 10;
+        }
+        .collectible:hover {
+            transform: scale(1.1);
+        }
+        .collected {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        
+        .start-button {
+            padding: 15px 30px;
+            font-size: 1.8em;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-top: 20px;
+            align-self: center;
+            box-shadow: 0 5px 15px rgba(0, 255, 0, 0.3);
+            transition: background-color 0.3s, transform 0.3s;
+        }
+        .start-button:hover {
+            background-color: #45a049;
+            transform: scale(1.05);
+        }
+        .start-button:active {
+            transform: scale(0.98);
+        }
+
+        
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.85);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border-radius: 15px;
+            z-index: 100;
+        }
+        .overlay h2 {
+            font-size: 3em;
+            color: #ffd700;
+            margin-bottom: 20px;
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.8);
+        }
+        .overlay p {
+            font-size: 1.5em;
+            color: #f0e6d2;
+            margin-bottom: 30px;
+            text-align: center;
+            max-width: 80%;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="game-header">
+            <div class="timer">Tiempo: <span id="timeLeft">60</span>s</div>
+            <div class="message" id="gameMessage">¡Recoge las ofrendas!</div>
+            <div class="score">Puntos: <span id="score">0</span></div>
+        </div>
+
+        <div class="game-area" id="gameArea">
+            <div class="altar" id="altar">Altar</div>
+            </div>
+
+        <div class="overlay" id="startOverlay">
+            <h2>El Desafío del Sacerdote Antiguo</h2>
+            <p>El sacerdote necesita tu ayuda. Recoge las ofrendas dispersas y llévalas al altar antes de que el tiempo se agote. ¡Que los dioses te guíen!</p>
+            <button class="start-button" id="startButton">Comenzar Aventura</button>
+        </div>
+    </div>
+
+    <script src="js/game.js"></script>
+</body>
+</html>
