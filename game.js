@@ -7,11 +7,11 @@ const startButton = document.getElementById('startButton');
 const startOverlay = document.getElementById('startOverlay');
 
 
-let timeLeft = 60; 
+let timeLeft = 60;
 let score = 0;
 let timerInterval;
-let requiredItems = {}; 
-let collectedItems = {}; 
+let requiredItems = {};
+let collectedItems = {};
 let gameActive = false;
 let currentLevel = 0;
 
@@ -37,9 +37,9 @@ const LEVEL_SETTINGS = [
 function startGame() {
     gameActive = true;
     score = 0;
-    currentLevel = 0; 
+    currentLevel = 0;
     scoreDisplay.textContent = score;
-    startOverlay.style.display = 'none'; 
+    startOverlay.style.display = 'none';
     loadLevel();
 }
 
@@ -47,35 +47,35 @@ function startGame() {
  * Carga la configuración del nivel actual, genera objetos y reinicia el temporizador.
  */
 function loadLevel() {
-    
+
     if (currentLevel >= LEVEL_SETTINGS.length) {
-        endGame(true); 
+        endGame(true);
         return;
     }
 
     const level = LEVEL_SETTINGS[currentLevel];
     timeLeft = level.time;
-    requiredItems = { ...level.items }; 
-    collectedItems = {};
+    requiredItems = { ...level.items };
+    collectedItems = {}; // Reset collected items for the new level
     for (const item in ITEMS) {
-        collectedItems[item] = 0; 
+        collectedItems[item] = 0;
     }
 
     timeLeftDisplay.textContent = timeLeft;
-    gameMessage.textContent = buildRequiredMessage(); 
+    gameMessage.textContent = buildRequiredMessage();
 
-    
+    // Clear previous collectibles
     gameArea.querySelectorAll('.collectible').forEach(item => item.remove());
-    
-    
+
+
     generateCollectibles(level.items);
 
-   
-    createCollectible('trampa', '💀'); 
-    createCollectible('trampa', '🕷️'); 
+    // Always create traps for each level
+    createCollectible('trampa', '💀');
+    createCollectible('trampa', '🕷️');
 
-    
-    clearInterval(timerInterval); 
+    // Clear any existing timer before setting a new one
+    clearInterval(timerInterval);
     timerInterval = setInterval(updateTimer, 1000);
 }
 
@@ -117,35 +117,45 @@ function createCollectible(type, emoji) {
     collectible.textContent = emoji;
     collectible.dataset.type = type;
 
-    
     const gameAreaRect = gameArea.getBoundingClientRect();
     const altarRect = altar.getBoundingClientRect();
 
     let randomX, randomY;
     let attempts = 0;
     const maxAttempts = 100;
-    const padding = 20; 
-    const minDistanceToAltar = 150; 
+    const padding = 20; // Padding from the edges of gameArea
+    const minDistanceToAltar = 150; // Minimum distance from center of altar
 
+    // Loop to find a position that is not too close to the altar and within bounds
     do {
-        randomX = padding + Math.random() * (gameAreaRect.width - collectible.offsetWidth - 2 * padding);
-        randomY = padding + Math.random() * (gameAreaRect.height - collectible.offsetHeight - 2 * padding);
+        // Calculate max allowed positions to keep collectible fully inside gameArea
+        const maxX = gameAreaRect.width - collectible.offsetWidth - padding;
+        const maxY = gameAreaRect.height - collectible.offsetHeight - padding;
+
+        randomX = padding + Math.random() * (maxX - padding);
+        randomY = padding + Math.random() * (maxY - padding);
         attempts++;
 
-        
+        // Calculate distance from the center of the collectible to the center of the altar
+        const collectibleCenterX = randomX + collectible.offsetWidth / 2;
+        const collectibleCenterY = randomY + collectible.offsetHeight / 2;
+
+        const altarCenterX = altarRect.left - gameAreaRect.left + altarRect.width / 2;
+        const altarCenterY = altarRect.top - gameAreaRect.top + altarRect.height / 2;
+
         const dist = Math.sqrt(
-            Math.pow(randomX - (altarRect.left - gameAreaRect.left + altarRect.width / 2), 2) +
-            Math.pow(randomY - (altarRect.top - gameAreaRect.top + altarRect.height / 2), 2)
+            Math.pow(collectibleCenterX - altarCenterX, 2) +
+            Math.pow(collectibleCenterY - altarCenterY, 2)
         );
 
         if (dist > minDistanceToAltar || attempts >= maxAttempts) {
-            break; 
+            break; // Found a good spot or ran out of attempts
         }
     } while (true);
-    
+
     collectible.style.left = `${randomX}px`;
     collectible.style.top = `${randomY}px`;
-    
+
     collectible.addEventListener('click', handleCollectibleClick);
     gameArea.appendChild(collectible);
 }
@@ -155,28 +165,30 @@ function createCollectible(type, emoji) {
  * @param {Event} event El evento de clic.
  */
 function handleCollectibleClick(event) {
-    if (!gameActive) return; 
+    if (!gameActive) return;
     const clickedItem = event.target;
     const itemType = clickedItem.dataset.type;
 
-    
+
     if (itemType === 'trampa') {
         gameMessage.textContent = "¡Cuidado! ¡Eso no es una ofrenda!";
-        score = Math.max(0, score - 5); 
+        score = Math.max(0, score - 5);
         scoreDisplay.textContent = score;
-        clickedItem.classList.add('collected'); 
+        clickedItem.classList.add('collected');
+        // Remove trap after a short delay to allow transition
+        setTimeout(() => clickedItem.remove(), 500);
         return;
     }
 
-    
     if (requiredItems[itemType] && collectedItems[itemType] < requiredItems[itemType]) {
         collectedItems[itemType]++;
-        score += 10; 
+        score += 10;
         scoreDisplay.textContent = score;
         gameMessage.textContent = `Has recogido ${collectedItems[itemType]} de ${requiredItems[itemType]} ${ITEMS[itemType].emoji}`;
-        clickedItem.classList.add('collected'); 
+        clickedItem.classList.add('collected');
+        // Remove collected item after a short delay to allow transition
+        setTimeout(() => clickedItem.remove(), 500);
     } else {
-       
         gameMessage.textContent = "Ya tienes suficientes de estos o no los necesitas.";
     }
 }
@@ -206,7 +218,7 @@ function checkWinCondition() {
             return false; // Aún faltan objetos de este tipo
         }
     }
-    return true; 
+    return true;
 }
 
 /**
@@ -216,11 +228,11 @@ altar.addEventListener('click', () => {
     if (!gameActive) return;
 
     if (checkWinCondition()) {
-        score += 50; 
+        score += 50;
         scoreDisplay.textContent = score;
         gameMessage.textContent = "¡Ofrendas entregadas! ¡Pasas al siguiente nivel!";
-        currentLevel++; 
-        setTimeout(loadLevel, 2000); 
+        currentLevel++;
+        setTimeout(loadLevel, 2000); // Wait 2 seconds before loading next level
     } else {
         gameMessage.textContent = "¡Te faltan ofrendas! Revisa lo que necesitas.";
     }
@@ -228,28 +240,26 @@ altar.addEventListener('click', () => {
 
 /**
  * Finaliza el juego, mostrando un mensaje de victoria o derrota.
- * @param {boolean} won 
+ * @param {boolean} won
  */
 function endGame(won) {
     gameActive = false;
-    clearInterval(timerInterval); 
-    startOverlay.style.display = 'flex'; 
+    clearInterval(timerInterval);
+    startOverlay.style.display = 'flex'; // Show the overlay again
 
     if (won) {
-        
         startOverlay.querySelector('h2').textContent = "¡Victoria Gloriosa!";
         startOverlay.querySelector('p').innerHTML = `Has completado todos los desafíos y tu puntuación final es: ${score}<br>¡Bien hecho, héroe antiguo!`;
         startButton.textContent = "Jugar de Nuevo";
     } else {
-        
         startOverlay.querySelector('h2').textContent = "Tiempo Agotado";
         startOverlay.querySelector('p').innerHTML = `No lograste completar la tarea a tiempo. Tu puntuación final es: ${score}<br>¡Inténtalo de nuevo!`;
         startButton.textContent = "Reintentar";
     }
 }
 
-
+// Event listener to start the game
 startButton.addEventListener('click', startGame);
 
-
-gameMessage.textContent = buildRequiredMessage();
+// Initialize game message with initial instructions (optional, handled by startGame for levels)
+// gameMessage.textContent = "¡Recoge las ofrendas para el sacerdote!"; // Removed, as loadLevel sets it
